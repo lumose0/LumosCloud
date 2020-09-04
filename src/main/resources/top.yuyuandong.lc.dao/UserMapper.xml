@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="top.yuyuandong.lc.dao.IUserDao">
+
+    <resultMap id="userMap" type="top.yuyuandong.lc.model.User">
+        <result column="user_id" property="userId" ></result>
+        <result column="user_name" property="userName" ></result>
+        <result column="user_password" property="userPassword" ></result>
+    </resultMap>
+
+    <insert id="saveUser" parameterType="top.yuyuandong.lc.model.User" >
+        insert into cloud_user(user_id,user_name,user_password)
+            values (#{userId},#{userName},#{userPassword})
+    </insert>
+
+</mapper>

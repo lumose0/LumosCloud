@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+<!--    扫描property文件 -->
+<context:property-placeholder location="classpath:db.properties"></context:property-placeholder>
+
+    <!--配置c3p0数据源-->
+<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+    <!--链接四要素-->
+    <property name="driverClass" value="${mysql.driver}"/>
+    <property name="jdbcUrl" value="${mysql.url}"/>
+    <property name="user" value="${mysql.username}"/>
+    <property name="password" value="${mysql.password}"/>
+    <!--其他配置-->
+    <property name="minPoolSize" value="5"/>
+    <property name="maxPoolSize" value="20"/>
+    <property name="acquireIncrement" value="5"/>
+</bean>
+    <!-- spring整合mybatis-->
+    <bean name="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"></property>
+        <property name="typeAliasesPackage" value="top.yuyuandong.lc.model"></property>
+        <property name="configLocation" value="classpath:mybatis/mybatis-config.xml"/>
+        <property name="mapperLocations" value="classpath*:top.yuyuandong.lc.dao/*Mapper.xml"></property>
+    </bean>
+    
+    <!--扫描映射配置文件-->
+    <bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer" >
+        <property name="basePackage" value="top.yuyuandong.lc.dao"></property>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>
+
+    <!--配置事务管理-->
+    <bean id="dataSourceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+    <!--通知-->
+    <tx:advice id="transactionAdvice" transaction-manager="dataSourceTransactionManager">
+        <tx:attributes>
+            <tx:method name="save*" propagation="REQUIRED"/>
+            <tx:method name="delete*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="insert*" propagation="REQUIRED"/>
+            <tx:method name="find*" propagation="SUPPORTS" read-only="true"/>
+            <tx:method name="get*" propagation="SUPPORTS" read-only="true"/>
+            <tx:method name="select*" propagation="SUPPORTS" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:advisor advice-ref="transactionAdvice" pointcut="execution(* top.yuyuandong.lc.service.impl.*.*(..))"></aop:advisor>
+    </aop:config>
+</beans>
